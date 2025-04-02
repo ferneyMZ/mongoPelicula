@@ -1,0 +1,23 @@
+{% extends "index.html" %}
+
+{% block contenido %}
+    <div class="container">
+        <h2 class="text-center">Lista de Géneros</h2>
+        <table class="table table-bordered mt-3">
+            <thead class="table-secondary text-center">
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for g in generos %}
+                <tr>
+                    <td>{{ g.id }}</td>
+                    <td>{{ g.nombre }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

@@ -1,0 +1,66 @@
+###listar genero
+GET http://127.0.0.1:3000/genero/
+
+
+###agregar genero
+
+POST http://127.0.0.1:3000/genero/
+Content-Type: application/json
+
+{
+    "nombre": "comedia"
+}
+###update genero
+PUT http://127.0.0.1:3000/genero/
+Content-Type: application/json
+    
+    {
+        "nombre": "asion",
+        "id":"67e4766eac30c5e03d5a3980"
+        }
+
+###delete genero
+DELETE http://127.0.0.1:3000/genero/
+Content-Type: application/json
+
+{
+    "id":"67e4766eac30c5e03d5a3980"
+    }
+
+
+
+
+###listar pelicula
+GET http://127.0.0.1:3000/pelicula/
+Content-Type: application/json
+
+### add de pelicula
+POST http://127.0.0.1:3000/pelicula/
+Content-Type: application/json
+
+{
+    "codigo":10,
+    "titulo":" la maria",
+    "protagonista":"homero", 
+    "duracion":199,
+    "resumen":"xxxx",
+    "foto":"img",
+    "genero":"67e4766eac30c5e03d5a3980"
+
+}
+
+###update de pelicula
+PUT http://127.0.0.1:3000/pelicula/
+Content-Type: application/json
+
+{
+    "id":"67e4837714ff7bcba859926c",
+    "codigo":2,
+    "titulo":" la maria",
+    "protagonista":"homero",
+    "duracion":200,
+    "resumen":"azazazazaza",
+    "foto":"img",   
+    "genero":"67e4766eac30c5e03d5a3980"
+}
+
