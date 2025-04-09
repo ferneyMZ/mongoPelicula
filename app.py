@@ -7,7 +7,7 @@ from google_recaptcha_flask import ReCaptcha
 
 load_dotenv()
 
-CORS(app)
+
 app = Flask(__name__)
 app.secret_key = "1234567890aeiou"
 
