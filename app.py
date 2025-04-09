@@ -33,6 +33,7 @@ db = MongoEngine(app)
 from routes.usuario import *
 from routes.genero import *
 from routes.pelicula import *
+from routes.recuperar import *
 if __name__ == "__main__":
     
     app.run(port=3000, host="0.0.0.0", debug=True)
