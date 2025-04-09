@@ -1,21 +1,14 @@
-from mongoengine import Document, StringField
+from mongoengine import *
 
 class Usuario(Document):
-    usuario = StringField(max_length=50, unique=True, required=True)
-    password = StringField(required=True)
-    nombre_completo = StringField(max_length=100, required=True)
-    correo_electronico = StringField(required=True, regex=r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$')
+    usuario = StringField(max_length=50, required=True, unique=True)
+    password = StringField(max_length=50,required=True)
+    nombres = StringField(max_length=50,required=True)
+    apellidos = StringField(max_length=50,required=True)
+    correo = EmailField(required=True, unique=True)
     
     def __repr__(self):
-        return f"Usuario({self.usuario})"
+        return f"{self.nombres} {self.apellidos}"
 
-# Ejemplo de cómo crear un usuario
-def crear_usuario():
-    nuevo_usuario = Usuario(
-        usuario="muñoz",
-        password="0000",
-        nombre_completo="ferney muñoz",
-        correo_electronico="ferneym@gmail.com"
-    )
-    nuevo_usuario.save()
-    print("Usuario guardado correctamente")
+
+

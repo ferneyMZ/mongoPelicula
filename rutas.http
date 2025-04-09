@@ -4,11 +4,12 @@ GET http://127.0.0.1:3000/genero/
 
 ###agregar genero
 
-POST http://127.0.0.1:3000/genero/
+
+POST HTTP://127.0.0.1:3000/genero/   
 Content-Type: application/json
 
 {
-    "nombre": "comedia"
+    "nombre": "Acción"
 }
 ###update genero
 PUT http://127.0.0.1:3000/genero/
@@ -31,22 +32,20 @@ Content-Type: application/json
 
 
 ###listar pelicula
-GET http://127.0.0.1:3000/pelicula/
-Content-Type: application/json
+GET HTTP://127.0.0.1:3000/pelicula/  
 
 ### add de pelicula
-POST http://127.0.0.1:3000/pelicula/
+POST HTTP://127.0.0.1:3000/pelicula/   
 Content-Type: application/json
 
 {
-    "codigo":10,
-    "titulo":" la maria",
-    "protagonista":"homero", 
-    "duracion":199,
-    "resumen":"xxxx",
-    "foto":"img",
-    "genero":"67e4766eac30c5e03d5a3980"
-
+    "codigo": 100,
+    "titulo":"SuperMdsfsdfsdfsd",
+    "protagonista": "richar mooz",
+    "duracion":120,
+    "resumen": "yyyyyyyyyyyyyy",
+    "foto": "13.jpg",
+    "genero": "67e411d8585a485b54864c11"
 }
 
 ###update de pelicula
@@ -62,5 +61,17 @@ Content-Type: application/json
     "resumen":"azazazazaza",
     "foto":"img",   
     "genero":"67e4766eac30c5e03d5a3980"
+}
+
+###agregar usuario
+POST http://127.0.0.1:3000/usuario/
+Content-Type: application/json
+
+{
+    "usuario": "ferney",
+    "password": "0000",
+    "nombres": "ferney",
+    "apellidos": "muñoz",
+    "correo": "ferney.m2003@gmail.com"
 }
 
