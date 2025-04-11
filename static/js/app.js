@@ -116,40 +116,39 @@ function obtenerGenero(id){
  * una petición al backend para
  * agregar una película.
  */
-function agregarPelicula(){
-    if (validarPelicula()){
-        url = "/pelicula/"
-        const pelicula={
-            codigo: document.getElementById('txtCodigo').value,
-            titulo: document.getElementById('txtTitulo').value,
-            protagonista: document.getElementById('txtProtagonista').value,
-            duracion: document.getElementById('txtDuracion').value,
-            resumen: document.getElementById('txtResumen').value,
-            genero: document.getElementById('cbGenero').value,
-            foto:''
-        }
-        fetch(url, {
-            method: "POST",
-            body: JSON.stringify(pelicula),
-            headers: {
-                "Content-Type": "application/json",
-            }
-        })
-        .then(respuesta => respuesta.json())
-        .then(resultado => {
-            if (resultado.estado) {
-            location.href = "/peliculas/"
-            }else{
-                swal.fire("Add Pelicula", resultado.mensaje, "warning")
-            }
-        })
-            .catch(error => {
-                console.error(error)
-        })
-    }else{
-        swal.fire("Add Pelicula", mensaje, "warning")
-    }
+// Función para enviar los datos del formulario de agregar
+function agregarPelicula() {
+    const formData = new FormData(document.getElementById('frmPelicula'));
     
+    fetch('/pelicula/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.estado) {
+            Swal.fire({
+                title: 'Éxito',
+                text: data.mensaje,
+                icon: 'success'
+            }).then(() => {
+                window.location.href = '/peliculas/';
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.mensaje,
+                icon: 'error'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            title: 'Error',
+            text: 'Error al agregar la película: ' + error,
+            icon: 'error'
+        });
+    });
 }
 
 
@@ -194,47 +193,40 @@ function agregarGenero(){
  * una película de acuerdo con su id
  * @param {*} id 
  */
-function editarPelicula(id){
-    if(validarPelicula()){
-        const pelicula={
-            id: id,
-            codigo: document.getElementById('txtCodigo').value,
-            titulo: document.getElementById('txtTitulo').value,
-            protagonista: document.getElementById('txtProtagonista').value,
-            duracion: document.getElementById('txtDuracion').value,
-            resumen: document.getElementById('txtResumen').value,
-            genero: document.getElementById('cbGenero').value,
-            foto:''
+// Función para enviar los datos del formulario de editar
+function editarPelicula(id) {
+    const formData = new FormData(document.getElementById('frmPelicula'));
+    formData.append('id', id);
+    
+    fetch('/pelicula/', {
+        method: 'PUT',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.estado) {
+            Swal.fire({
+                title: 'Éxito',
+                text: data.mensaje,
+                icon: 'success'
+            }).then(() => {
+                window.location.href = '/peliculas/';
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.mensaje,
+                icon: 'error'
+            });
         }
-        const url= "/pelicula/"
-        fetch(url, {
-            method: "PUT",
-            body: JSON.stringify(pelicula),
-            headers: {
-                "Content-Type": "application/json",
-            }
-        })
-        .then(respuesta => respuesta.json())
-        .then(resultado => {       
-            if (resultado.estado){
-                Swal.fire({
-                    position: "top-end",
-                    icon: "success",
-                    title: resultado.mensaje,
-                    showConfirmButton: false,
-                    timer: 2000
-                })
-                location.href="/peliculas/"
-            }else{
-                swal.fire("Edit Pelicula",resultado.mensaje,"warning")
-            }
-        })
-        .catch(error => {
-            console.error(error)
-        })
-    }else{
-        swal.fire("Edit Pelicula",mensaje,"warning")
-    }
+    })
+    .catch(error => {
+        Swal.fire({
+            title: 'Error',
+            text: 'Error al actualizar la película: ' + error,
+            icon: 'error'
+        });
+    });
 }
 
 /**
@@ -242,19 +234,21 @@ function editarPelicula(id){
  * para eliminar una película de acuerdo con su id
  * @param {*} id 
  */
-function deletePelicula(id){
+function deletePelicula(id) {
     Swal.fire({
-        title: "¿Está usted seguro de querer eliminar la Película",
-        showDenyButton: true,
-        confirmButtonText: "SI",
-        denyButtonText: "NO"
+        title: "¿Está seguro de eliminar esta película?",
+        text: "Esta acción no se puede deshacer",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#d33"
     }).then((result) => {
-        /* Read more about isConfirmed, isDenied below */
         if (result.isConfirmed) {
-            const pelicula={
-                id: id,
-            }
-            const url= "/pelicula/"
+            const pelicula = { 
+                id: id  // Asegúrate que el backend espera 'id' como clave
+            };
+            const url = "/pelicula/";
             fetch(url, {
                 method: "DELETE",
                 body: JSON.stringify(pelicula),
@@ -263,16 +257,103 @@ function deletePelicula(id){
                 }
             })
             .then(respuesta => respuesta.json())
-            .then(resultado => {       
-                if (resultado.estado){
-                    location.href="/peliculas/"
-                }else{
-                    swal.fire("Delete Pelicula",resultado.mensaje,"warning")
+            .then(resultado => {
+                if (resultado.estado) {
+                    Swal.fire({
+                        title: "Eliminada",
+                        text: resultado.mensaje,
+                        icon: "success"
+                    }).then(() => {
+                        location.reload();  // Recargar la página para ver cambios
+                    });
+                } else {
+                    Swal.fire("Error", resultado.mensaje, "error");
                 }
             })
             .catch(error => {
-                console.error(error)
+                console.error(error);
+                Swal.fire("Error", "No se pudo eliminar la película", "error");
+            });
+        }
+    });
+}
+
+// Agrega estas funciones al final de tu archivo app.js
+
+function editarGenero(id) {
+    const nuevoNombre = prompt("Ingrese el nuevo nombre del género:");
+    if (nuevoNombre) {
+        const genero = {
+            id: id,
+            nombre: nuevoNombre
+        };
+        const url = "/genero/";
+        fetch(url, {
+            method: "PUT",
+            body: JSON.stringify(genero),
+            headers: {
+                "Content-Type": "application/json",
+            }
+        })
+        .then(respuesta => respuesta.json())
+        .then(resultado => {
+            if (resultado.estado) {
+                Swal.fire({
+                    title: "Éxito",
+                    text: resultado.mensaje,
+                    icon: "success"
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire("Error", resultado.mensaje, "error");
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            Swal.fire("Error", "No se pudo actualizar el género", "error");
+        });
+    }
+}
+
+function eliminarGenero(id) {
+    Swal.fire({
+        title: "¿Está seguro de eliminar este género?",
+        text: "Esta acción no se puede deshacer",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#d33"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const genero = { id: id };
+            const url = "/genero/";
+            fetch(url, {
+                method: "DELETE",
+                body: JSON.stringify(genero),
+                headers: {
+                    "Content-Type": "application/json",
+                }
             })
+            .then(respuesta => respuesta.json())
+            .then(resultado => {
+                if (resultado.estado) {
+                    Swal.fire({
+                        title: "Eliminado",
+                        text: resultado.mensaje,
+                        icon: "success"
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire("Error", resultado.mensaje, "error");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                Swal.fire("Error", "No se pudo eliminar el género", "error");
+            });
         }
     });
 }

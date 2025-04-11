@@ -43,7 +43,22 @@
                 <textarea name="txtResumen" id="txtResumen" cols="30" rows="3" class="form-control" 
                 required>{{pelicula.resumen}}</textarea>
             </div>
-            <div>
+            <div class="mb-3">
+                <label class="fw-bold" for="txtFoto">Foto:</label>
+                <input type="file" name="txtFoto" id="txtFoto" class="form-control" accept=".jpg, .jpeg, .png" 
+                onchange="mostrarVistaPrevia(event)">
+                <img id="vistaPrevia" src="{{ url_for('static', filename='imagenes/' + pelicula.foto) }}" 
+                alt="Vista previa de la imagen" class="img-thumbnail mt-2 d-none" width="200px">
+                <script>
+                    // Mostrar la vista previa de la imagen actual
+                    const vistaPrevia = document.getElementById('vistaPrevia');
+                    vistaPrevia.classList.remove('d-none'); // Mostrar la imagen
+                    vistaPrevia.src = "{{ url_for('static', filename='imagenes/' + pelicula.foto) }}"; // Establecer la fuente de la imagen
+                    </script>
+
+                </script>
+            </div>
+                    <div>
                 <button type="button" class="btn btn-dark" 
                 onclick="editarPelicula('{{pelicula.id}}')">Editar</button>
 

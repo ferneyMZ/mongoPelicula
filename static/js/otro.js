@@ -1,373 +1,359 @@
-let productos = []
-let categorias = []
-let mensajeValidarDatos = null
-let base64URL = null
+let peliculas=[]
+let generos=[]
+let mensaje=null
+listarGeneros()
 
 
-function currencyFormatter({ currency, value }) {
-    const formatter = new Intl.NumberFormat('es-CO', {
-        style: 'currency',
-        minimumFractionDigits: 2,
-        currency
+function validarPelicula(){
+    if (document.getElementById("txtCodigo").value==""){
+        mensaje="Debe ingresar código de la Película"
+        return false;
+    }else if(document.getElementById("txtTitulo").value==""){
+        mensaje="Debe ingresar Título de la Película"
+        return false;
+    }else if(document.getElementById("txtProtagonista").value==""){
+        mensaje="Debe ingresar el Protagonista de la Película"
+        return false;
+    }else if(document.getElementById('txtDuracion').value==""){
+        mensaje="Debe ingresar la duración de la Película"
+        return false;
+    }else if(document.getElementById('cbGenero').value==""){
+        mensaje="Debe seleccionar el género de la Película"
+        return false;
+    }else if(document.getElementById('txtResumen').value==""){
+        mensaje="Debe ingresar un pequeño resumen de la Película"
+        return false;
+    }else{
+        return true;
+    }
+}
+
+function validarGenero(){
+    if (document.getElementById("txtGenero").value==""){
+        mensaje="Debe ingresar nombre del género"
+        return false
+    }
+    else{
+        return true;
+    }
+}
+function listarPeliculas(){
+    url = "/pelicula/"
+    fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
     })
-    return formatter.format(value)
+        .then(respuesta => respuesta.json())
+        .then(resultado => {
+            peliculas = resultado.peliculas
+            console.log(peliculas)
+            mostrarPeliculasTabla()
+        })
+        .catch(error => {
+            console.error(error)
+        })
 }
 
-function validarDatos() {
-    if (txtCodigo.value == "") {
-        mensajeValidarDatos = "Debe ingresar Código del producto"
-        return false
-    } else if (txtNombre.value == "") {
-        mensajeValidarDatos = "Debe ingresar nombre del producto"
-        return false
-    } else if (txtPrecio.value == "") {
-        mensajeValidarDatos = "Debe ingresar precio del producto"
-        return false
-    } else if (cbCategoria.value == "") {
-        mensajeValidarDatos = "Debe seleccionar categoria"
-        return false
-    } else if (fileFoto.value == "") {
-        mensajeValidarDatos = "Debe seleccionar Foto"
-        return false
-    } else {
-        return true
-    }
+
+function listarGeneros(){
+    url = "/genero/"
+    fetch(url, {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        }
+    })
+        .then(respuesta => respuesta.json())
+        .then(resultado => {
+            generos = resultado.generos
+            console.log(generos)
+        })
+        .catch(error => {
+            console.error(error)
+        })
 }
 
-/**
- * Función que obtiene el objeto
- * de tipo file cuando se selecciona la imagen
- * y la muestra en el id llamado imagenProducto
- * Adiconalmente valida la extensión
- * @param {*} evento 
- */
-async function visualizarFoto(evento) {
-    const files = evento.target.files
-    const archivo = files[0]
-    let filename = archivo.name
-    let extension = filename.split('.').pop()
-    extension = extension.toLowerCase()
-    if (extension !== "jpg") {
-        fileFoto.value = ""
-        swal.fire("Seleccionar", "La imagen debe ser en formato JPG", "warning")
-    } else {
-        base64URL = await encodeFileAsBase64URL(archivo);
-        const objectURL = URL.createObjectURL(archivo)
-        imagenProducto.setAttribute("src", objectURL)
-    }
-}
 
-/**
-* Returns a file in Base64URL format.
-* @param {File} file
-* @return {Promise<string>}
-*/
-async function encodeFileAsBase64URL(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.addEventListener('loadend', () => {
-            resolve(reader.result);
-        });
-        reader.readAsDataURL(file);
+function mostrarPeliculasTabla(){
+    let datos=""
+   
+    peliculas.forEach(pelicula => {
+        datos += "<tr>"
+        datos += "<td>" + pelicula.codigo + "</td>"
+        datos += "<td>" + pelicula.titulo + "</td>"
+        datos += "<td>" + pelicula.duracion + "</td>"
+        datos += "<td>" + pelicula.protagonista + "</td>"
+        let genero = obtenerGenero(pelicula.genero.$oid);        
+        datos += "<td>" + genero + "</td>"
+        datos += '<td class="text-center" style="font-size:3vh">' +
+            '<i class="fa fa-edit text-warning" title="Editar"></i>' +
+            '<i class="fa fa-trash text-danger" title="Eliminar"></i></td>'
+        datos += '</tr>'
+        
     });
-};
+    document.getElementById("datosPeliculas").innerHTML = datos
+
+}
+
+function obtenerGenero(id){
+    let retorno=""
+    for (let index = 0; index < generos.length; index++) {
+        const genero = generos[index];        
+        if (genero._id.$oid==id){
+            retorno= genero.nombre
+            break
+        }        
+    }
+    return retorno
+
+}
+
 
 /**
- * Función que realiza petición POST
- * al servidor para agregar un 
- * producto en formato JSON.
- * La imagen se envía en formato base64
+ * Función que se encarga de hacer
+ * una petición al backend para
+ * agregar una película.
  */
-function agregarProducto() {
-    if (validarDatos()) {
-        const producto = {
-            codigo: txtCodigo.value,
-            nombre: txtNombre.value,
-            precio: txtPrecio.value,
-            categoria: cbCategoria.value
+// Función para enviar los datos del formulario de agregar
+function agregarPelicula() {
+    const formData = new FormData(document.getElementById('frmPelicula'));
+    
+    fetch('/pelicula/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.estado) {
+            Swal.fire({
+                title: 'Éxito',
+                text: data.mensaje,
+                icon: 'success'
+            }).then(() => {
+                window.location.href = '/peliculas/';
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.mensaje,
+                icon: 'error'
+            });
         }
-        const foto = {
-            foto: base64URL
+    })
+    .catch(error => {
+        Swal.fire({
+            title: 'Error',
+            text: 'Error al agregar la película: ' + error,
+            icon: 'error'
+        });
+    });
+}
+
+
+/**
+ * Función que se encarga de hacer
+ * una petición al backend para
+ * agregar un género.
+ */
+function agregarGenero(){
+    if(validarGenero()){
+        const genero = {
+            nombre: document.getElementById('txtGenero').value 
         }
-        const datos = {
-            producto: producto,
-            foto: foto
-        }
-        const url = "/agregarProductoJson"
+        const url= "/genero/"
         fetch(url, {
             method: "POST",
-            body: JSON.stringify(datos),
+            body: JSON.stringify(genero),
             headers: {
                 "Content-Type": "application/json",
-            },
-        })
-            .then(respuesta => respuesta.json())
-            .then(resultado => {
-                console.log(resultado)
-                if (resultado.estado) {
-                    frmProducto.reset()
-                    Swal.fire({
-                        title: resultado.mensaje,
-                        confirmButtonText: "Continuar",
-                        icon: "success",
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            location.href = "/listarProductos"
-                        }
-                    });
-                } else {
-                    swal.fire("Agregar Producto", resultado.mensaje, "warning")
-                }
-            })
-    } else {
-        swal.fire("Agregar Producto", mensajeValidarDatos, "info")
-    }
-
-}
-
-/**
- * Petición al servdor
- * para obtener laa categorias de 
- * productos
- */
-function obtenerCategorias() {
-    url = "/obtenerCategorias"
-    fetch(url, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-        .then(respuesta => respuesta.json())
-        .then(resultado => {
-            categorias = JSON.parse(resultado.categorias)
-            console.log(categorias)
-        })
-        .catch(error => {
-            console.error(error)
-        })
-
-}
-
-/**
- * Función que muestra las categorias
- * en control de formulario identificado
- * como cbCategoria
- */
-function mostrarCategorias() {
-    let datos = "<option value=''>Seleccione</option>"
-    categorias.forEach(categoria => {
-        datos += "<option value=" + categoria["_id"]["$oid"] + ">" + categoria["nombre"] + "</option>"
-    });
-    cbCategoria.innerHTML = datos
-}
-
-/**
- * Petición al servidor para obtener
- * los productos registrados en la
- * base de datos y mostrarlos en una
- * tabla
- */
-function obtenerProductos() {
-    url = "/listarProductosJson"
-    fetch(url, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-        .then(respuesta => respuesta.json())
-        .then(resultado => {
-            //productos = JSON.parse(resultado.productos)
-            productos = resultado.productos
-            categorias = resultado.categorias
-            console.log(resultado.productos)
-            mostrarProductosTabla()
-        })
-        .catch(error => {
-            console.error(error)
-        })
-}
-
-function consultarJson(id) {
-    url = "/consultar/" + id
-    fetch(url, {
-        method: "GET",
-        headers: {
-            "Content-Type": "application/json",
-        }
-    })
-        .then(respuesta => respuesta.json())
-        .then(resultado => {
-            productos = JSON.parse(resultado.productos)
-            console.log(productos)
-            mostrarProductosTabla()
-        })
-        .catch(error => {
-            console.error(error)
-        })
-}
-
-/**
- * Función que crea el html con los productos
- * y los inserta en la tabla en el id llamado
- * listaProductos
- */
-function mostrarProductosTabla() {
-    let datos = ""
-    productos.forEach(producto => {
-        datos += "<tr>"
-        datos += "<td>" + producto.codigo + "</td>"
-        datos += "<td>" + producto.nombre + "</td>"
-        const valor = parseInt(producto['precio'])
-        const precio = currencyFormatter({
-            currency: "COP",
-            valor
-        })
-        datos += "<td>" + precio + "</td>"
-        datos += "<td>" + producto.categoria['nombre'] + "</td>"
-        datos += "<td class='text-center'>" +
-            "<img src='../static/imagenes/" + producto.id + ".jpg' width='50' height='50'></td>"
-        datos += '<td class="text-center" style="font-size:4vh">' +
-            '<a href="/consultar/"' + producto.codigo + '><i class="fa fa-edit text-warning" title="Editar"></i></a>' +
-            '<i class="fa fa-trash text-danger" onclick="eliminarJson(' + producto.id + ')" title="Eliminar"></i></td>'
-        datos += '</tr>'
-
-
-    });
-    console.log(datos)
-    listaProductos.innerHTML = datos
-}
-
-/**
- * Función que realiza petición al 
- * servidor para validar el ingreso a
- * la aplicación
- */
-function iniciarSesion() {
-    const usuario = {
-        usuario: txtUser.value,
-        password: txtPassword.value
-    }
-
-    const url = "/iniciarSesionJson"
-    fetch(url, {
-        method: "POST",
-        body: JSON.stringify(usuario),
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-        .then(respuesta => respuesta.json())
-        .then(resultado => {
-            console.log(resultado)
-            if (resultado.estado) {
-                location.href = "/listarProductos"
-            } else {
-                swal.fire("Iniciar Sesión", resultado.mensaje, "warning")
             }
         })
-}
-
-/**
- * Petición al servidor para editar}
- * un producto de acuerdo a su id.
- */
-function editarProducto() {
-    const producto = {
-        id: idProducto.value,
-        codigo: txtCodigo.value,
-        nombre: txtNombre.value,
-        precio: txtPrecio.value,
-        categoria: cbCategoria.value
-    }
-    const foto = {
-        foto: base64URL
-    }
-    const datos = {
-        producto: producto,
-        foto: foto
-    }
-    const url = "/editarProductoJson"
-    fetch(url, {
-        method: "PUT",
-        body: JSON.stringify(datos),
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
         .then(respuesta => respuesta.json())
-        .then(resultado => {
-            console.log(resultado)
-            if (resultado.estado) {
-                swal.fire({
-                    title: resultado.mensaje,
-                    confirmButtonText: "Continuar",
-                    icon: "success",
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        location.href = "/listarProductos"
-                    }
-                })
-            } else {
-                swal.fire("Editar Producto", resultado.mensaje, "warning")
+        .then(resultado => {       
+            if (resultado.estado){
+                location.href="/generos/"
+            }else{
+                swal.fire("Add Genero",resultado.mensaje,"warning")
             }
         })
+        .catch(error => {
+            console.error(error)
+        })
+    }else{
+        swal.fire("Add Genero",mensaje,"warning")
+    }
 }
 
-function eliminar(id) {
-    Swal.fire({
-        title: "¿Está usted seguro de querer eliminar el producto",
-        showDenyButton: true,
-        confirmButtonText: "SI",
-        denyButtonText: "NO"
-    }).then((result) => {
-        /* Read more about isConfirmed, isDenied below */
-        if (result.isConfirmed) {
-            location.href = "/eliminar/" + id
-        }
-    });
-}
 
 /**
- * Función que realiza petición al servidor
- * para eliminar un producto de acuerdo a su id
+ * Función que se encarga de hacer la
+ * petición al servidor para actualizar
+ * una película de acuerdo con su id
  * @param {*} id 
  */
-function eliminarJson(id) {
+// Función para enviar los datos del formulario de editar
+function editarPelicula(id) {
+    const formData = new FormData(document.getElementById('frmPelicula'));
+    formData.append('id', id);
+    
+    fetch('/pelicula/', {
+        method: 'PUT',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.estado) {
+            Swal.fire({
+                title: 'Éxito',
+                text: data.mensaje,
+                icon: 'success'
+            }).then(() => {
+                window.location.href = '/peliculas/';
+            });
+        } else {
+            Swal.fire({
+                title: 'Error',
+                text: data.mensaje,
+                icon: 'error'
+            });
+        }
+    })
+    .catch(error => {
+        Swal.fire({
+            title: 'Error',
+            text: 'Error al actualizar la película: ' + error,
+            icon: 'error'
+        });
+    });
+}
+
+/**
+ * Función que realiza la petición al servidor
+ * para eliminar una película de acuerdo con su id
+ * @param {*} id 
+ */
+function deletePelicula(id) {
     Swal.fire({
-        title: "¿Está usted seguro de querer eliminar el producto",
-        showDenyButton: true,
-        confirmButtonText: "SI",
-        denyButtonText: "NO"
-    }).then((result) => {       
+        title: "¿Está seguro de eliminar esta película?",
+        text: "Esta acción no se puede deshacer",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#d33"
+    }).then((result) => {
         if (result.isConfirmed) {
-            url = "/eliminarJson/" + id
+            const pelicula = { 
+                id: id  // Asegúrate que el backend espera 'id' como clave
+            };
+            const url = "/pelicula/";
             fetch(url, {
                 method: "DELETE",
+                body: JSON.stringify(pelicula),
                 headers: {
                     "Content-Type": "application/json",
                 }
             })
-                .then(respuesta => respuesta.json())
-                .then(resultado => {
-                    if (resultado.estado) {
-                        Swal.fire({
-                            title: resultado.mensaje,
-                            confirmButtonText: "Continuar",
-                            icon: "success",
-                        }).then((result) => {                            
-                            if (result.isConfirmed) {
-                                location.href = "/listarProductos"
-                            }
-                        })
-                    } else {
-                        swal.fire("Eliminar Producto", resultado.mensaje, "info")
-                    }
-                })
-                .catch(error => {
-                    console.error(error)
-                })
+            .then(respuesta => respuesta.json())
+            .then(resultado => {
+                if (resultado.estado) {
+                    Swal.fire({
+                        title: "Eliminada",
+                        text: resultado.mensaje,
+                        icon: "success"
+                    }).then(() => {
+                        location.reload();  // Recargar la página para ver cambios
+                    });
+                } else {
+                    Swal.fire("Error", resultado.mensaje, "error");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                Swal.fire("Error", "No se pudo eliminar la película", "error");
+            });
+        }
+    });
+}
+
+// Agrega estas funciones al final de tu archivo app.js
+
+function editarGenero(id) {
+    const nuevoNombre = prompt("Ingrese el nuevo nombre del género:");
+    if (nuevoNombre) {
+        const genero = {
+            id: id,
+            nombre: nuevoNombre
+        };
+        const url = "/genero/";
+        fetch(url, {
+            method: "PUT",
+            body: JSON.stringify(genero),
+            headers: {
+                "Content-Type": "application/json",
+            }
+        })
+        .then(respuesta => respuesta.json())
+        .then(resultado => {
+            if (resultado.estado) {
+                Swal.fire({
+                    title: "Éxito",
+                    text: resultado.mensaje,
+                    icon: "success"
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire("Error", resultado.mensaje, "error");
+            }
+        })
+        .catch(error => {
+            console.error(error);
+            Swal.fire("Error", "No se pudo actualizar el género", "error");
+        });
+    }
+}
+
+function eliminarGenero(id) {
+    Swal.fire({
+        title: "¿Está seguro de eliminar este género?",
+        text: "Esta acción no se puede deshacer",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, eliminar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#d33"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            const genero = { id: id };
+            const url = "/genero/";
+            fetch(url, {
+                method: "DELETE",
+                body: JSON.stringify(genero),
+                headers: {
+                    "Content-Type": "application/json",
+                }
+            })
+            .then(respuesta => respuesta.json())
+            .then(resultado => {
+                if (resultado.estado) {
+                    Swal.fire({
+                        title: "Eliminado",
+                        text: resultado.mensaje,
+                        icon: "success"
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire("Error", resultado.mensaje, "error");
+                }
+            })
+            .catch(error => {
+                console.error(error);
+                Swal.fire("Error", "No se pudo eliminar el género", "error");
+            });
         }
     });
 }
